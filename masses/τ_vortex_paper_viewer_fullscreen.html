@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>τ‑Vortex Paper — Markdown → PDF (KaTeX + LaTeX)</title>
+  <style>
+    :root{
+      --bg:#0b1020;--panel:#0f172a;--ink:#e5e7eb;--muted:#94a3b8;--accent:#60a5fa;--card:#0b1222;--border:#1f2a44;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial}
+    header{position:sticky;top:0;background:linear-gradient(180deg,var(--bg),rgba(11,16,32,.7));backdrop-filter:blur(6px);z-index:10;border-bottom:1px solid var(--border)}
+    .wrap{max-width:1200px;margin:0 auto;padding:10px 16px}
+    .title{font-weight:700;letter-spacing:.2px}
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:stretch;padding:14px}
+    textarea{width:100%;height:calc(100vh - 170px);resize:vertical;background:var(--card);color:var(--ink);border:1px solid var(--border);border-radius:14px;padding:14px 16px;font:14px/1.5 ui-monospace,Menlo,Consolas,monospace}
+    .preview{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:22px;overflow:auto;max-height:calc(100vh - 170px)}
+    .toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+    button{background:var(--card);color:var(--ink);border:1px solid var(--border);padding:8px 12px;border-radius:10px;cursor:pointer}
+    button:hover{border-color:var(--accent)}
+    .muted{color:var(--muted)}
+    /* Markdown content styling */
+    .preview h1{font-size:28px;margin:.6em 0 .3em}
+    .preview h2{font-size:22px;margin:1em 0 .4em}
+    .preview h3{font-size:18px;margin:1em 0 .4em}
+    .preview p, .preview li{color:#d9e1f2}
+    .preview code{background:#0c1428;border:1px solid var(--border);padding:.12em .35em;border-radius:6px}
+    .preview pre{background:#0c1428;border:1px solid var(--border);padding:12px;border-radius:12px;overflow:auto}
+    .preview table{border-collapse:collapse;width:100%;margin:12px 0;border:1px solid var(--border)}
+    .preview th,.preview td{border:1px solid var(--border);padding:8px 10px;text-align:left}
+    .preview blockquote{border-left:3px solid var(--accent);padding-left:12px;color:#cbd5e1}
+    .badge{display:inline-block;background:#0c1428;border:1px solid var(--border);padding:4px 8px;border-radius:999px;font-size:12px}
+    @media (max-width:1000px){.grid{grid-template-columns:1fr}}
+    
+    @media print{
+      header{display:none !important}
+      textarea{display:none !important}
+      .preview{border:none;max-height:unset !important;height:auto !important;overflow:visible}
+      body{background:white;color:black}
+      .preview *{color:black !important}
+    }
+    
+      .preview{border:none;max-height:unset;height:auto}
+      body{background:white;color:black}
+      .preview *{color:black !important}
+    }
+  
+    /* --- Fullscreen toggle styles --- */
+    .fsbtn{
+      position:fixed;right:16px;bottom:16px;z-index:10000;
+      background:var(--accent);color:#081223;border:1px solid var(--border);
+      padding:10px 12px;border-radius:999px;font-weight:600;box-shadow:0 6px 18px rgba(0,0,0,.35);
+    }
+    .fsbtn[aria-pressed="true"]{background:#22c55e;color:#04131e}
+    body.fs header{display:none}
+    body.fs .grid{grid-template-columns:1fr}
+    body.fs textarea{display:none !important}
+    body.fs #out.preview{
+      position:fixed;inset:0;z-index:9999;
+      max-height:none !important;height:100vh !important;overflow:auto;
+      border:none;border-radius:0;padding:32px;background:var(--panel);
+    }
+
+</style>
+  <!-- Marked (Markdown -> HTML) -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <!-- KaTeX for LaTeX math -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css"/>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+  <!-- highlight.js for code -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/styles/github-dark.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/lib/common.min.js"></script>
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <div class="toolbar">
+        <div class="title">τ‑Vortex Paper — Markdown Viewer (KaTeX)</div>
+        <span class="badge">Print → PDF via your browser</span>
+        <button id="btnPrint">Print / Save PDF</button>
+        <button id="btnDownload">Download HTML</button>
+        <button id="btnCopy">Copy Markdown</button>
+        <span class="muted">Supports LaTeX: <code>$$...$$</code>, <code>\( ... \)</code>, <code>\[ ... \]</code></span>
+      </div>
+    </div>
+  </header>
+
+  <section class="grid editor wrap">
+    <textarea id="md">
+# **The τ‑Vortex Hamiltonian and the Riemann Spectrum**
+
+**Jason Richardson (HistoryViper Research Group)**  
+Link: https://github.com/historyViper/Sage
+
+---
+
+## **Abstract**
+A chirality‑preserving Hamiltonian with phase gradient $\theta \approx 0.3477$ and chirality parameter $\beta=0.223$ reproduces the first 110 nontrivial Riemann zeta zeros with **3.06\% MAPE**. Introducing an independent skew phase $\gamma$ breaks time‑reversal symmetry (TRS), shifting the system from GOE to GUE universality with spacing ratio $\langle r \rangle \approx 0.60$–$0.61$. Results remain stable for matrix sizes $N=200$–$400$, indicating a structural correspondence between prime‑encoded chirality and zeta‑zero statistics.
+
+---
+
+## **1. Model Definition**
+We study an $N\times N$ Hermitian band Hamiltonian with nearest‑neighbor (NN) complex hopping and next‑nearest (NNN) skew coupling on a ring:
+
+$$
+H_{ij} = g\,e^{i\phi_i}\,\delta_{i+1,j} + g\,e^{-i\phi_{i-1}}\,\delta_{i-1,j}
+\; + \; \beta\,e^{i(\phi_{i-2}+\gamma)}\,\delta_{i+2,j}
+\; + \; \beta\,e^{-i(\phi_{i-2}+\gamma)}\,\delta_{i-2,j},
+\qquad \phi_i = \theta i.
+$$
+
+Boundary condition: periodic with optional global twist $\varphi_b \approx 0.17$.
+
+**Parameters**
+
+| Symbol | Meaning | Value |
+|:--|:--|:--|
+| $\theta$ | phase gradient | $0.3477$ (= $3\times19\times61/10000$) |
+| $\beta$ | chirality strength | $0.223$ (prime $223/1000$) |
+| $\gamma$ | independent skew phase | $0.11$–$0.17$ |
+| $N$ | matrix size | $220$–$400$ |
+
+---
+
+## **2. Numerical Results**
+
+| $N$ | $\theta$ | $\beta$ | $\gamma$ | MAPE (\%) | RMSE | $\langle r \rangle$ | Class |
+|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|
+| 220 | 0.3477 | 0.223 | 0.00 | **3.06** | 4.49 | 0.524 | GOE |
+| 220 | 0.3477 | 0.223 | 0.11 | 3.04 | 4.43 | 0.598 | GUE |
+| 300 | 0.3477 | 0.223 | 0.11 | 3.02 | 4.41 | 0.603 | GUE |
+| 400 | 0.3477 | 0.223 | 0.11 | 2.98 | 4.39 | 0.607 | GUE |
+
+**Stability**: $\Delta$MAPE $\le 0.3\%$ across $N=200$–$400$.  
+**Best linear map**: $t \approx 87.28\,\mu + 17.87$.
+
+---
+
+## **3. Interpretation**
+- $\theta \approx \pi/9$ gives quasi‑periodic interference; its triprime factorization ($3\cdot19\cdot61$) implies long beat periods $\gg N$.
+- $\beta=223$ injects prime‑weighted skew coupling.
+- Independent $\gamma\in[0.11,0.17]$ breaks TRS, moving $\langle r \rangle$ from GOE‑like ($\sim0.53$) to GUE‑like ($\sim0.60$).  
+- Residuals under linear rescaling reflect non‑uniform spectral density; unfolding reduces the remaining $\sim$5\% gap.
+
+---
+
+## **4. Universality Summary**
+
+| Ensemble | Matrix Type | TRS | $\langle r \rangle$ | τ‑Vortex Dial |
+|:--|:--|:--:|:--:|:--|
+| GOE | real symmetric | yes | 0.536 | $\gamma=0$ |
+| GUE | complex Hermitian | no | 0.603 | $\gamma\approx0.11$–$0.17$ |
+| GSE | quaternionic | spin TRS | 0.676 | (spin extension) |
+
+---
+
+## **5. Conclusions**
+The τ‑vortex Hamiltonian reproduces Riemann zero statistics within ~3\% error and lands in the correct **GUE universality** once TRS is explicitly broken by an independent skew phase. Robustness across $N$ and parameters suggests a structural link between prime‑encoded chirality and the zeta spectrum.
+
+---
+
+### **Code & Data**
+All scripts and logs: https://github.com/historyViper/Sage (folder: `Hilbert-Polya/τ-Vortex`).
+
+</textarea>
+    <div id="out" class="preview"></div>
+      <button id="btnFS" class="fsbtn" aria-pressed="false" title="Toggle Fullscreen Preview">Fullscreen</button>
+  </section>
+
+  <script>
+    const md = document.getElementById('md');
+    const out = document.getElementById('out');
+    const btnPrint = document.getElementById('btnPrint');
+    const btnDownload = document.getElementById('btnDownload');
+    const btnCopy = document.getElementById('btnCopy');
+
+    // Configure marked
+    marked.setOptions({
+      breaks: true,
+      gfm: true,
+      highlight: function(code, lang){
+        try{ return hljs.highlight(code, {language: lang}).value; }catch(e){ return hljs.highlightAuto(code).value; }
+      }
+    });
+
+    function render(){
+      const html = marked.parse(md.value);
+      out.innerHTML = html;
+      // Render math after markdown
+      if(window.renderMathInElement){
+        renderMathInElement(out, {
+          delimiters: [
+            {left: '$$', right: '$$', display: true},
+            {left: '\\(', right: '\\)', display: false},
+            {left: '\\[', right: '\\]', display: true}
+          ],
+          throwOnError: false
+        });
+      }
+      // Highlight code blocks
+      out.querySelectorAll('pre code').forEach(block=>hljs.highlightElement(block));
+    }
+
+    md.addEventListener('input', render);
+    window.addEventListener('load', render);
+
+    btnPrint.onclick = () => window.print();
+
+    btnDownload.onclick = () => {
+      const blob = new Blob([document.documentElement.outerHTML], {type: 'text/html'});
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'tau-vortex-paper.html';
+      a.click();
+      URL.revokeObjectURL(a.href);
+    };
+
+    btnCopy.onclick = async () => {
+      try{ await navigator.clipboard.writeText(md.value); btnCopy.textContent='Copied!'; setTimeout(()=>btnCopy.textContent='Copy Markdown',1200);}catch(e){alert('Copy failed');}
+    };
+  
+    const btnFS = document.getElementById('btnFS');
+    btnFS.onclick = () => {
+      const on = document.body.classList.toggle('fs');
+      btnFS.setAttribute('aria-pressed', on ? 'true' : 'false');
+      btnFS.textContent = on ? 'Exit Fullscreen' : 'Fullscreen';
+      // Ensure preview is fully rendered and at top when entering fullscreen
+      if(on){ render(); out.scrollTo({top:0, behavior:'instant' || 'auto'}); }
+    };
+
+  </script>
+</body>
+</html>
