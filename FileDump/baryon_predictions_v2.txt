@@ -1,0 +1,50 @@
+================================================================================
+Geometric Boundary Projection — Baryon Mass Predictions
+24 baryons | 1 free parameter (winding number)
+Derived coupling = sin^2(pi/15)/alpha_IR = 0.043227/0.848809 = 0.050927
+Scale factor = 1.050927
+================================================================================
+
+  Baryon        r_B   Sheet  Predicted   Observed     Err%  note
+--------------------------------------------------------------------------------
+  proton         11   first      940.1    938.272    +0.19%  
+  neutron        19  second      944.3    939.565    +0.50%  
+  Lambda0        23  second     1116.8   1115.683    +0.10%  
+  Sigma+          7   first     1217.0   1189.370    +2.32%  
+  Sigma0         23  second     1116.8   1192.642    -6.36%  isospin
+  Sigma-          7   first     1225.4   1197.449    +2.33%  
+  Xi0             1   first     1316.8   1314.860    +0.15%  
+  Xi-            29  second     1321.0   1321.710    -0.05%  
+  Omega-         13   first     1532.3   1672.450    -8.38%  topology
+  Lambda_c        7   first     2339.4   2286.460    +2.31%  charm
+  Sigma_c++      23  second     2230.8   2453.970    -9.10%  charm
+  Sigma_c+        7   first     2339.4   2452.900    -4.63%  charm
+  Sigma_c0       23  second     2239.2   2453.750    -8.75%  charm
+  Xi_c+          29  second     2435.0   2467.710    -1.32%  charm
+  Xi_c0           1   first     2439.2   2470.870    -1.28%  charm
+  Omega_c        17  second     2546.0   2695.200    -5.53%  charm
+  Xi_cc++         1   first     3553.2   3621.400    -1.88%  charm predicted 2017
+  Xi_cc+         29  second     3557.4   3619.970    -1.73%  charm predicted 2026
+  Lambda_b       17  second     5576.9   5619.600    -0.76%  
+  Sigma_b+       13   first     5677.1   5810.560    -2.30%  
+  Sigma_b-       13   first     5685.5   5815.640    -2.24%  
+  Xi_b0          19  second     5711.3   5791.900    -1.39%  
+  Xi_b-          11   first     5715.5   5797.000    -1.41%  
+  Omega_b         7   first     5992.4   6046.100    -0.89%  
+
+  MAPE light clean:  0.8064%  (n=7)
+  MAPE charm:        4.0594%  (n=9)
+  MAPE bottom:       1.4968%  (n=6)
+  MAPE all 24:       2.7460%  (n=24)
+
+UNDISCOVERED BARYON PREDICTIONS:
+------------------------------------------------------------
+  Omega_ccc J=1/2      r=17      4782 MeV   ref: not observed
+  Omega_ccc J=3/2      r=17      4991 MeV   ref: 4793+-5 lattice
+  Xi_bb (ubb)          r= 1     10237 MeV   ref: ~10143 lattice
+  Xi_bb (dbb)          r=29     10241 MeV   ref: ~10143 lattice
+  Omega_bb (sbb)       r=13     10453 MeV   ref: ~10340 lattice
+  Omega_cc (scc)       r=13      3769 MeV   ref: not observed
+  Omega_cb (scb)       r=23      7006 MeV   ref: ~7000 theory
+  Xi_cb (ucb)          r=11      6829 MeV   ref: ~6900 theory
+  Omega_bbb J=1/2      r= 7     14913 MeV   ref: ~14370 lattice
