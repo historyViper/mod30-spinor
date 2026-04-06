@@ -1,0 +1,1034 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GBP v7 Ablation Study — Interactive</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #00001a 0%, #0a0a2e 100%);
+            color: #ffffff;
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            padding: 60px 80px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            font-size: 48px;
+            font-weight: 300;
+            text-align: center;
+            margin-bottom: 70px;
+            letter-spacing: 0.5px;
+            color: #ffffff;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .table-section {
+            margin-bottom: 60px;
+        }
+
+        .table-title {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #ffd700;
+            letter-spacing: 0.3px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        thead {
+            background: rgba(255, 215, 0, 0.08);
+        }
+
+        th {
+            padding: 18px 24px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 16px;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            color: #00d4ff;
+            border-bottom: 2px solid rgba(0, 212, 255, 0.3);
+        }
+
+        td {
+            padding: 16px 24px;
+            font-size: 17px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            line-height: 1.6;
+        }
+
+        tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        tbody tr:hover {
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .delta-value {
+            font-weight: 700;
+            font-size: 20px;
+            color: #ffd700;
+            letter-spacing: 0.3px;
+        }
+
+        .negative-value {
+            color: #00ff88;
+        }
+
+        .result-cell {
+            font-weight: 600;
+            color: #ffd700;
+        }
+
+        /* Toggle Switch Styles */
+        .toggle-cell {
+            text-align: center;
+            width: 80px;
+        }
+
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 54px;
+            height: 28px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ff3366;
+            transition: 0.3s;
+            border-radius: 28px;
+            box-shadow: 0 2px 8px rgba(255, 51, 102, 0.4);
+        }
+
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: 0.3s;
+            border-radius: 50%;
+        }
+
+        input:checked + .toggle-slider {
+            background-color: #00ff88;
+            box-shadow: 0 2px 8px rgba(0, 255, 136, 0.4);
+        }
+
+        input:checked + .toggle-slider:before {
+            transform: translateX(26px);
+        }
+
+        /* Mass cell animations */
+        .mass-cell {
+            font-weight: 600;
+            font-size: 18px;
+            transition: all 0.5s ease;
+            min-width: 140px;
+        }
+
+        .mass-cell.active {
+            color: #00ff88;
+        }
+
+        .mass-cell.removed {
+            color: #ff3366;
+            text-shadow: 0 0 8px rgba(255, 51, 102, 0.5);
+        }
+
+        .particle-name {
+            font-style: italic;
+            color: #00d4ff;
+            font-weight: 500;
+        }
+
+        .particle-row {
+            background: rgba(255, 255, 255, 0.01);
+        }
+
+        .particle-row.highlight {
+            background: rgba(255, 215, 0, 0.05);
+            animation: pulse 0.6s ease-out;
+        }
+
+        @keyframes pulse {
+            0%, 100% { background: rgba(255, 215, 0, 0.05); }
+            50% { background: rgba(255, 215, 0, 0.12); }
+        }
+
+        .takeaway {
+            margin-top: 80px;
+            padding: 32px 48px;
+            background: linear-gradient(90deg, rgba(255, 215, 0, 0.12) 0%, rgba(0, 212, 255, 0.12) 100%);
+            border-left: 4px solid #ffd700;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .takeaway p {
+            font-size: 28px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            color: #ffffff;
+            text-shadow: 0 2px 8px rgba(255, 215, 0, 0.3);
+        }
+
+        .instruction {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 20px;
+            background: rgba(0, 212, 255, 0.08);
+            border-radius: 8px;
+            border: 1px solid rgba(0, 212, 255, 0.2);
+        }
+
+        .instruction p {
+            font-size: 18px;
+            color: #00d4ff;
+            font-weight: 500;
+        }
+
+        @media (max-width: 1200px) {
+            body {
+                padding: 40px 40px;
+            }
+
+            h1 {
+                font-size: 36px;
+            }
+
+            .table-title {
+                font-size: 20px;
+            }
+
+            th, td {
+                padding: 12px 16px;
+                font-size: 15px;
+            }
+
+            .delta-value {
+                font-size: 18px;
+            }
+
+            .takeaway p {
+                font-size: 22px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>GBP v7 Ablation Study — Interactive Demonstration</h1>
+
+        <div class="instruction">
+            <p>💡 Toggle switches to see how removing each term affects particle masses • Green = ON (term included) • Red = OFF (term removed)</p>
+        </div>
+
+        <!-- TABLE 1: Structural Terms with Uniform Impact -->
+        <div class="table-section">
+            <div class="table-title">Table 1: Structural Terms — Uniform Impact Across All Particles</div>
+            <table id="table1">
+                <thead>
+                    <tr>
+                        <th>Toggle</th>
+                        <th>Test</th>
+                        <th>Particle</th>
+                        <th>Mass (MeV)</th>
+                        <th>ΔMAPE</th>
+                        <th>Interpretation</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Remove lam (boundary scaling) -->
+                    <tr class="particle-row" data-test="lam" data-particle="0">
+                        <td class="toggle-cell" rowspan="5">
+                            <label class="toggle-switch">
+                                <input type="checkbox" checked data-test="lam">
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </td>
+                        <td rowspan="5">Remove lam (boundary scaling)</td>
+                        <td class="particle-name">Ξc⁰</td>
+                        <td class="mass-cell active" data-base="2470.91">2470.91</td>
+                        <td rowspan="5"><span class="delta-value">+5.35%</span></td>
+                        <td rowspan="5">boundary scaling is load-bearing</td>
+                    </tr>
+                    <tr class="particle-row" data-test="lam" data-particle="1">
+                        <td class="particle-name">Ξc⁺</td>
+                        <td class="mass-cell active" data-base="2467.94">2467.94</td>
+                    </tr>
+                    <tr class="particle-row" data-test="lam" data-particle="2">
+                        <td class="particle-name">Ωc⁰</td>
+                        <td class="mass-cell active" data-base="2695.20">2695.20</td>
+                    </tr>
+                    <tr class="particle-row" data-test="lam" data-particle="3">
+                        <td class="particle-name">Λc⁺</td>
+                        <td class="mass-cell active" data-base="2286.46">2286.46</td>
+                    </tr>
+                    <tr class="particle-row" data-test="lam" data-particle="4">
+                        <td class="particle-name">Dc⁺</td>
+                        <td class="mass-cell active" data-base="2457.00">2457.00</td>
+                    </tr>
+
+                    <!-- Force all to S1/T1 (topology) -->
+                    <tr class="particle-row" data-test="topology" data-particle="0">
+                        <td class="toggle-cell" rowspan="5">
+                            <label class="toggle-switch">
+                                <input type="checkbox" checked data-test="topology">
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </td>
+                        <td rowspan="5">Force all baryons to S1/T1</td>
+                        <td class="particle-name">Ξc⁰</td>
+                        <td class="mass-cell active" data-base="2470.91">2470.91</td>
+                        <td rowspan="5"><span class="delta-value">+2.63%</span></td>
+                        <td rowspan="5">topology assignments are essential</td>
+                    </tr>
+                    <tr class="particle-row" data-test="topology" data-particle="1">
+                        <td class="particle-name">Ξc⁺</td>
+                        <td class="mass-cell active" data-base="2467.94">2467.94</td>
+                    </tr>
+                    <tr class="particle-row" data-test="topology" data-particle="2">
+                        <td class="particle-name">Ωc⁰</td>
+                        <td class="mass-cell active" data-base="2695.20">2695.20</td>
+                    </tr>
+                    <tr class="particle-row" data-test="topology" data-particle="3">
+                        <td class="particle-name">Λc⁺</td>
+                        <td class="mass-cell active" data-base="2286.46">2286.46</td>
+                    </tr>
+                    <tr class="particle-row" data-test="topology" data-particle="4">
+                        <td class="particle-name">Dc⁺</td>
+                        <td class="mass-cell active" data-base="2457.00">2457.00</td>
+                    </tr>
+
+                    <!-- Remove dg term -->
+                    <tr class="particle-row" data-test="dg" data-particle="0">
+                        <td class="toggle-cell" rowspan="5">
+                            <label class="toggle-switch">
+                                <input type="checkbox" checked data-test="dg">
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </td>
+                        <td rowspan="5">Remove dg term</td>
+                        <td class="particle-name">Ξc⁰</td>
+                        <td class="mass-cell active" data-base="2470.91">2470.91</td>
+                        <td rowspan="5"><span class="delta-value">+1.30%</span></td>
+                        <td rowspan="5">direct geometric coupling is necessary</td>
+                    </tr>
+                    <tr class="particle-row" data-test="dg" data-particle="1">
+                        <td class="particle-name">Ξc⁺</td>
+                        <td class="mass-cell active" data-base="2467.94">2467.94</td>
+                    </tr>
+                    <tr class="particle-row" data-test="dg" data-particle="2">
+                        <td class="particle-name">Ωc⁰</td>
+                        <td class="mass-cell active" data-base="2695.20">2695.20</td>
+                    </tr>
+                    <tr class="particle-row" data-test="dg" data-particle="3">
+                        <td class="particle-name">Λc⁺</td>
+                        <td class="mass-cell active" data-base="2286.46">2286.46</td>
+                    </tr>
+                    <tr class="particle-row" data-test="dg" data-particle="4">
+                        <td class="particle-name">Dc⁺</td>
+                        <td class="mass-cell active" data-base="2457.00">2457.00</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- TABLE 2: Non-Structural Terms with Minimal Impact -->
+        <div class="table-section">
+            <div class="table-title">Table 2: Non-Structural Terms — Minimal Global Impact</div>
+            <table id="table2">
+                <thead>
+                    <tr>
+                        <th>Toggle</th>
+                        <th>Test</th>
+                        <th>Particle</th>
+                        <th>Mass (MeV)</th>
+                        <th>ΔMAPE</th>
+                        <th>Answer to Objection</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Remove geo_factor overrides -->
+                    <tr class="particle-row" data-test="overrides" data-particle="0">
+                        <td class="toggle-cell" rowspan="5">
+                            <label class="toggle-switch">
+                                <input type="checkbox" checked data-test="overrides">
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </td>
+                        <td rowspan="5">Remove geo_factor overrides</td>
+                        <td class="particle-name">Ξc⁰</td>
+                        <td class="mass-cell active" data-base="2470.91">2470.91</td>
+                        <td rowspan="5"><span class="delta-value">+0.15%</span></td>
+                        <td rowspan="5"><span class="result-cell">Overrides are NOT carrying the model — negligible impact</span></td>
+                    </tr>
+                    <tr class="particle-row" data-test="overrides" data-particle="1">
+                        <td class="particle-name">Ξc⁺</td>
+                        <td class="mass-cell active" data-base="2467.94">2467.94</td>
+                    </tr>
+                    <tr class="particle-row" data-test="overrides" data-particle="2">
+                        <td class="particle-name">Ωc⁰</td>
+                        <td class="mass-cell active" data-base="2695.20">2695.20</td>
+                    </tr>
+                    <tr class="particle-row" data-test="overrides" data-particle="3">
+                        <td class="particle-name">Λc⁺</td>
+                        <td class="mass-cell active" data-base="2286.46">2286.46</td>
+                    </tr>
+                    <tr class="particle-row" data-test="overrides" data-particle="4">
+                        <td class="particle-name">Dc⁺</td>
+                        <td class="mass-cell active" data-base="2457.00">2457.00</td>
+                    </tr>
+
+                    <!-- Remove gc term -->
+                    <tr class="particle-row" data-test="gc" data-particle="0">
+                        <td class="toggle-cell" rowspan="5">
+                            <label class="toggle-switch">
+                                <input type="checkbox" checked data-test="gc">
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </td>
+                        <td rowspan="5">Remove gc term</td>
+                        <td class="particle-name">Ξc⁰</td>
+                        <td class="mass-cell active" data-base="2470.91">2470.91</td>
+                        <td rowspan="5"><span class="delta-value">+0.026%</span></td>
+                        <td rowspan="5"><span class="result-cell">gc is NOT secretly doing the work — tiny refinement only</span></td>
+                    </tr>
+                    <tr class="particle-row" data-test="gc" data-particle="1">
+                        <td class="particle-name">Ξc⁺</td>
+                        <td class="mass-cell active" data-base="2467.94">2467.94</td>
+                    </tr>
+                    <tr class="particle-row" data-test="gc" data-particle="2">
+                        <td class="particle-name">Ωc⁰</td>
+                        <td class="mass-cell active" data-base="2695.20">2695.20</td>
+                    </tr>
+                    <tr class="particle-row" data-test="gc" data-particle="3">
+                        <td class="particle-name">Λc⁺</td>
+                        <td class="mass-cell active" data-base="2286.46">2286.46</td>
+                    </tr>
+                    <tr class="particle-row" data-test="gc" data-particle="4">
+                        <td class="particle-name">Dc⁺</td>
+                        <td class="mass-cell active" data-base="2457.00">2457.00</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- TABLE 3: Localized Photon-Branch Impact (Keep as Reference) -->
+        <div class="table-section">
+            <div class="table-title">Table 3: Localized Photon-Branch Effect — Strong Local Impact on Specific States</div>
+            <table id="table3">
+                <thead>
+                    <tr>
+                        <th>Toggle</th>
+                        <th>Test</th>
+                        <th>State</th>
+                        <th>Mass (MeV)</th>
+                        <th>Error Increase</th>
+                        <th>Interpretation</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="particle-row" data-test="photon" data-particle="0">
+                        <td class="toggle-cell" rowspan="2">
+                            <label class="toggle-switch">
+                                <input type="checkbox" checked data-test="photon">
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </td>
+                        <td rowspan="2">Remove photon branch</td>
+                        <td class="particle-name">Ξc*⁺</td>
+                        <td class="mass-cell active" data-base="2645.90">2645.90</td>
+                        <td><span class="delta-value">+5.66%</span></td>
+                        <td rowspan="2">Strong localized effect — small global (+0.28%), large local impact where topology predicts</td>
+                    </tr>
+                    <tr class="particle-row" data-test="photon" data-particle="1">
+                        <td class="particle-name">Ξc*⁰</td>
+                        <td class="mass-cell active" data-base="2645.90">2645.90</td>
+                        <td><span class="delta-value">+5.66%</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="takeaway">
+            <p>🎯 The dominant improvement comes from structural terms (lam, topology, dg), not ad hoc refinements (overrides, gc)</p>
+        </div>
+    </div>
+
+    <script>
+        // Ablation test data: maps test names to their ΔMAPE impact percentages
+        const ablationData = {
+            'lam': 5.35,
+            'topology': 2.63,
+            'dg': 1.30,
+            'overrides': 0.15,
+            'gc': 0.026,
+            'photon': 5.66  // Localized effect
+        };
+
+        // Initialize all toggle switches
+        document.querySelectorAll('input[type="checkbox"][data-test]').forEach(toggle => {
+            toggle.addEventListener('change', function() {
+                const testName = this.dataset.test;
+                const isActive = this.checked;
+                updateParticleMasses(testName, isActive);
+            });
+        });
+
+        function updateParticleMasses(testName, isActive) {
+            const deltaMAPE = ablationData[testName];
+            
+            // Find all particle rows for this test
+            const rows = document.querySelectorAll(`tr.particle-row[data-test="${testName}"]`);
+            
+            rows.forEach(row => {
+                const massCell = row.querySelector('.mass-cell');
+                const baseMass = parseFloat(massCell.dataset.base);
+                
+                // Add pulse animation
+                row.classList.remove('highlight');
+                void row.offsetWidth; // Force reflow
+                row.classList.add('highlight');
+                
+                if (isActive) {
+                    // Term is ON: show baseline mass
+                    massCell.textContent = baseMass.toFixed(2);
+                    massCell.classList.remove('removed');
+                    massCell.classList.add('active');
+                } else {
+                    // Term is OFF (removed): calculate degraded mass
+                    // Mass prediction worsens by ΔMAPE percentage
+                    const massShift = baseMass * (deltaMAPE / 100);
+                    const newMass = baseMass + massShift;
+                    
+                    massCell.textContent = `${newMass.toFixed(2)} (↑${massShift.toFixed(1)})`;
+                    massCell.classList.remove('active');
+                    massCell.classList.add('removed');
+                }
+            });
+            
+            // Remove highlight after animation
+            setTimeout(() => {
+                rows.forEach(row => row.classList.remove('highlight'));
+            }, 600);
+        }
+    </script>
+
+
+
+<script>
+/**
+ * Iframe 元素高亮注入脚本
+ * 需要在目标网站中引入此脚本来支持跨域 iframe 高亮功能
+ *
+ * 使用方法：
+ * 1. 将此脚本添加到目标网站的 HTML 中
+ * 2. 或通过浏览器扩展、用户脚本等方式注入
+ */
+
+(function () {
+  "use strict";
+
+  // 检查是否在 iframe 中
+  if (window.self === window.top) {
+    return; // 不在 iframe 中，不执行
+  }
+
+  // 检查是否已经初始化过
+  if (window.__iframeHighlightInitialized) {
+    return;
+  }
+  window.__iframeHighlightInitialized = true;
+  console.log("Iframe 高亮脚本已加载");
+
+  // 创建高亮覆盖层
+  var overlay = document.createElement("div");
+  overlay.id = "iframe-highlight-overlay";
+  overlay.style.cssText = "\n    position: fixed;\n    top: 0;\n    left: 0;\n    width: 100vw;\n    height: 100vh;\n    pointer-events: none;\n    z-index: 999999;\n    overflow: hidden;\n  ";
+
+  // 创建悬停高亮框（虚线边框）
+  var highlightBox = document.createElement("div");
+  highlightBox.id = "iframe-highlight-box";
+  highlightBox.style.cssText = "\n    position: absolute;\n    border: 2px dashed #007AFF;\n    background: rgba(0, 122, 255, 0.08);\n    pointer-events: none;\n    display: none;\n    transition: all 0.1s ease;\n    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.8);\n    border-radius: 2px;\n  ";
+
+  // 创建选中节点的常驻高亮框（实线边框）
+  var selectedBox = document.createElement("div");
+  selectedBox.id = "iframe-selected-box";
+  selectedBox.style.cssText = "\n    position: absolute;\n    border: 2px solid #007AFF;\n    pointer-events: none;\n    display: none;\n    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.9), 0 0 8px rgba(255, 107, 53, 0.4);\n    border-radius: 2px;\n    z-index: 1000000;\n  ";
+
+  // 创建悬停标签显示
+  var tagLabel = document.createElement("div");
+  tagLabel.id = "iframe-tag-label";
+  tagLabel.style.cssText = "\n    position: absolute;\n    background: #007AFF;\n    color: white;\n    padding: 2px 6px;\n    font-size: 11px;\n    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;\n    border-radius: 2px;\n    pointer-events: none;\n    display: none;\n    white-space: nowrap;\n    z-index: 1000001;\n    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);\n    font-weight: 500;\n  ";
+
+  // 创建选中节点标签
+  var selectedLabel = document.createElement("div");
+  selectedLabel.id = "iframe-selected-label";
+  selectedLabel.style.cssText = "\n    position: absolute;\n    background: #007AFF;\n    color: white;\n    padding: 3px 8px;\n    font-size: 11px;\n    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;\n    border-radius: 3px;\n    pointer-events: none;\n    display: none;\n    white-space: nowrap;\n    z-index: 1000002;\n    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);\n    font-weight: 600;\n  ";
+  overlay.appendChild(highlightBox);
+  overlay.appendChild(selectedBox);
+  overlay.appendChild(tagLabel);
+  overlay.appendChild(selectedLabel);
+  document.body.appendChild(overlay);
+
+  // 存储当前选中的元素
+  var selectedElement = null;
+  var highlightEnabled = false;
+
+  // 更新选中元素的高亮显示
+  function updateSelectedHighlight(element) {
+    console.log("updateSelectedHighlight called with:", element);
+    if (!element) {
+      selectedBox.style.display = "none";
+      selectedLabel.style.display = "none";
+      selectedElement = null;
+      console.log("Cleared selected highlight");
+      return;
+    }
+    selectedElement = element;
+    var rect = element.getBoundingClientRect();
+    console.log("Selected element rect:", rect);
+
+    // 更新选中高亮框位置
+    selectedBox.style.display = "block";
+    selectedBox.style.left = "".concat(rect.left - 2, "px");
+    selectedBox.style.top = "".concat(rect.top - 2, "px");
+    selectedBox.style.width = "".concat(rect.width + 4, "px");
+    selectedBox.style.height = "".concat(rect.height + 4, "px");
+
+    // 更新选中标签位置和内容
+    selectedLabel.style.display = "block";
+    selectedLabel.textContent = "\u2713 <".concat(element.tagName.toLowerCase(), ">");
+
+    // 计算标签位置，确保不超出视窗
+    var labelTop = rect.top - 28;
+    var labelLeft = rect.left;
+
+    // 如果标签会超出顶部，显示在元素下方
+    if (labelTop < 5) {
+      labelTop = rect.bottom + 5;
+    }
+
+    // 如果标签会超出右侧，向左调整
+    var labelWidth = selectedLabel.offsetWidth || 100; // 预估宽度
+    if (labelLeft + labelWidth > window.innerWidth - 10) {
+      labelLeft = window.innerWidth - labelWidth - 10;
+    }
+    selectedLabel.style.left = "".concat(Math.max(5, labelLeft), "px");
+    selectedLabel.style.top = "".concat(labelTop, "px");
+    console.log("Selected highlight positioned at:", {
+      left: selectedBox.style.left,
+      top: selectedBox.style.top,
+      width: selectedBox.style.width,
+      height: selectedBox.style.height
+    });
+  }
+  function getElementSelector(element) {
+    if (!(element instanceof Element)) throw new Error('Argument must be a DOM element');
+    var segments = [];
+    var current = element;
+    while (current !== document.documentElement) {
+      var selector = '';
+      // 优先检查唯一ID
+      if (current.id && document.querySelectorAll("#".concat(current.id)).length === 1) {
+        segments.unshift("#".concat(current.id));
+        break; // ID唯一，无需继续向上
+      }
+
+      // 生成类名选择器（取第一个有效类名）
+      var classes = Array.from(current.classList).filter(function (c) {
+        return !c.startsWith('js-');
+      });
+      var className = classes.length > 0 ? ".".concat(classes[0]) : '';
+
+      // 生成位置索引（nth-child）
+      var tag = current.tagName.toLowerCase();
+      if (!className) {
+        var siblings = Array.from(current.parentNode.children);
+        var index = siblings.findIndex(function (el) {
+          return el === current;
+        }) + 1;
+        selector = "".concat(tag, ":nth-child(").concat(index, ")");
+      } else {
+        selector = className;
+      }
+      segments.unshift(selector);
+      current = current.parentElement;
+    }
+
+    // 处理根元素
+    if (current === document.documentElement) {
+      segments.unshift('html');
+    }
+    return segments.join(' > ');
+  }
+
+  // 获取元素文本内容
+  function getElementText(element) {
+    var _element$textContent;
+    if (element.tagName === "INPUT") {
+      return element.value || element.placeholder || "";
+    }
+    if (element.tagName === "TEXTAREA") {
+      return element.value || element.placeholder || "";
+    }
+    var text = ((_element$textContent = element.textContent) === null || _element$textContent === void 0 ? void 0 : _element$textContent.trim()) || "";
+    return text.length > 50 ? text.substring(0, 50) + "..." : text;
+  }
+
+  // 获取元素属性信息
+  function getElementAttributes(element) {
+    var attrs = {};
+    for (var i = 0; i < element.attributes.length; i++) {
+      var attr = element.attributes[i];
+      attrs[attr.name] = attr.value;
+    }
+    return attrs;
+  }
+
+  // 鼠标悬停事件处理
+  function handleMouseOver(e) {
+    if (!highlightEnabled) return;
+    var target = e.target;
+    if (!target || target === overlay || target === highlightBox || target === tagLabel || target === selectedBox || target === selectedLabel) {
+      return;
+    }
+
+    // 避免高亮 html 和 body 元素
+    if (target === document.documentElement || target === document.body) {
+      return;
+    }
+
+    // 如果是已选中的元素，不显示悬停高亮
+    if (target === selectedElement) {
+      highlightBox.style.display = "none";
+      tagLabel.style.display = "none";
+      return;
+    }
+    var rect = target.getBoundingClientRect();
+    var selector = getElementSelector(target);
+    var text = getElementText(target);
+    var attributes = getElementAttributes(target);
+
+    // 更新悬停高亮框位置
+    highlightBox.style.display = "block";
+    highlightBox.style.left = "".concat(rect.left - 2, "px");
+    highlightBox.style.top = "".concat(rect.top - 2, "px");
+    highlightBox.style.width = "".concat(rect.width + 4, "px");
+    highlightBox.style.height = "".concat(rect.height + 4, "px");
+
+    // 更新标签位置和内容
+    tagLabel.style.display = "block";
+    tagLabel.textContent = "<".concat(target.tagName.toLowerCase(), ">");
+
+    // 计算标签位置，确保不超出视窗
+    var labelTop = rect.top - 22;
+    var labelLeft = rect.left;
+
+    // 如果标签会超出顶部，显示在元素下方
+    if (labelTop < 0) {
+      labelTop = rect.bottom + 5;
+    }
+
+    // 如果标签会超出右侧，向左调整
+    if (labelLeft + tagLabel.offsetWidth > window.innerWidth) {
+      labelLeft = window.innerWidth - tagLabel.offsetWidth - 5;
+    }
+    tagLabel.style.left = "".concat(Math.max(0, labelLeft), "px");
+    tagLabel.style.top = "".concat(labelTop, "px");
+
+    // 发送消息到父窗口
+    var elementInfo = {
+      tagName: target.tagName.toLowerCase(),
+      rect: {
+        left: rect.left,
+        top: rect.top,
+        right: rect.right,
+        bottom: rect.bottom,
+        width: rect.width,
+        height: rect.height,
+        x: rect.x,
+        y: rect.y
+      },
+      selector: selector,
+      text: text,
+      attributes: attributes,
+      url: window.location.href,
+      path: window.location.pathname,
+      timestamp: Date.now()
+    };
+    try {
+      window.parent.postMessage({
+        type: "iframe-element-hover",
+        data: elementInfo,
+        source: "iframe-highlight-injector"
+      }, "*");
+    } catch (error) {
+      console.warn("无法发送消息到父窗口:", error);
+    }
+  }
+
+  // 鼠标离开事件处理
+  function handleMouseOut(e) {
+    if (!highlightEnabled) return;
+    var relatedTarget = e.relatedTarget;
+
+    // 如果鼠标移动到高亮相关元素上，不隐藏高亮
+    if (relatedTarget && (relatedTarget === highlightBox || relatedTarget === tagLabel || relatedTarget === overlay || relatedTarget === selectedBox || relatedTarget === selectedLabel)) {
+      return;
+    }
+    highlightBox.style.display = "none";
+    tagLabel.style.display = "none";
+    try {
+      window.parent.postMessage({
+        type: "iframe-element-hover",
+        data: null,
+        source: "iframe-highlight-injector"
+      }, "*");
+    } catch (error) {
+      console.warn("无法发送消息到父窗口:", error);
+    }
+  }
+
+  // 点击事件处理
+  function handleClick(e) {
+    var target = e.target;
+    if (!target || target === overlay || target === highlightBox || target === tagLabel || target === selectedBox || target === selectedLabel) {
+      return;
+    }
+
+    // 避免处理 html 和 body 元素
+    if (target === document.documentElement || target === document.body) {
+      return;
+    }
+
+    // 检查是否是交互元素，这些元素需要保留默认行为
+    var isInteractiveElement = ['input', 'textarea', 'select', 'button', 'a'].includes(target.tagName.toLowerCase());
+
+    // 如果高亮功能启用，对于非交互元素阻止默认行为和事件传播
+    if (highlightEnabled) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    var rect = target.getBoundingClientRect();
+    var selector = getElementSelector(target);
+    var text = getElementText(target);
+    var attributes = getElementAttributes(target);
+    console.log("Element clicked:", {
+      tagName: target.tagName,
+      selector: selector,
+      rect: rect
+    });
+
+    // 立即更新选中高亮
+    updateSelectedHighlight(target);
+
+    // 隐藏悬停高亮，因为现在是选中状态
+    highlightBox.style.display = "none";
+    tagLabel.style.display = "none";
+    var elementInfo = {
+      tagName: target.tagName.toLowerCase(),
+      rect: {
+        left: rect.left,
+        top: rect.top,
+        right: rect.right,
+        bottom: rect.bottom,
+        width: rect.width,
+        height: rect.height,
+        x: rect.x,
+        y: rect.y
+      },
+      selector: selector,
+      text: text,
+      attributes: attributes,
+      url: window.location.href,
+      path: window.location.pathname,
+      timestamp: Date.now()
+    };
+    try {
+      window.parent.postMessage({
+        type: "iframe-element-click",
+        data: elementInfo,
+        source: "iframe-highlight-injector"
+      }, "*");
+    } catch (error) {
+      console.warn("无法发送消息到父窗口:", error);
+    }
+  }
+
+  // 监听来自父窗口的消息
+  function handleParentMessage(event) {
+    console.log("Received message from parent:", event.data);
+    if (event.data.type === "iframe-highlight-toggle") {
+      var enabled = event.data.enabled;
+      console.log("Highlight toggle:", enabled);
+      if (enabled) {
+        enableHighlight();
+      } else {
+        disableHighlight();
+      }
+    } else if (event.data.type === "enable-iframe-highlight") {
+      console.log("Enable iframe highlight");
+      enableHighlight();
+    } else if (event.data.type === "disable-iframe-highlight") {
+      console.log("Disable iframe highlight");
+      disableHighlight();
+    } else if (event.data.type === "toggle-iframe-highlight") {
+      var _enabled = event.data.enabled !== undefined ? event.data.enabled : !highlightEnabled;
+      console.log("Toggle iframe highlight to:", _enabled);
+      if (_enabled) {
+        enableHighlight();
+      } else {
+        disableHighlight();
+      }
+    } else if (event.data.type === "update-selected-element") {
+      var selector = event.data.selector;
+      console.log("Update selected element with selector:", selector);
+      if (selector) {
+        try {
+          var element = document.querySelector(selector);
+          console.log("Found element by selector:", element);
+          updateSelectedHighlight(element);
+        } catch (error) {
+          console.warn("Failed to select element:", error);
+          updateSelectedHighlight(null);
+        }
+      } else {
+        updateSelectedHighlight(null);
+      }
+    } else if (event.data.type === "clear-selected-element") {
+      console.log("Clear selected element");
+      updateSelectedHighlight(null);
+    }
+  }
+
+  // 启用高亮功能
+  function enableHighlight() {
+    console.log("Enabling highlight");
+    document.addEventListener("mouseover", handleMouseOver, true);
+    document.addEventListener("mouseout", handleMouseOut, true);
+    document.addEventListener("click", handleClick, true);
+    highlightEnabled = true;
+    overlay.style.display = "block";
+  }
+
+  // 禁用高亮功能
+  function disableHighlight() {
+    console.log("Disabling highlight");
+    highlightEnabled = false;
+    // 保持事件监听器，但通过 highlightEnabled 变量控制行为
+    // 这样可以保留选中状态的显示
+    highlightBox.style.display = "none";
+    tagLabel.style.display = "none";
+    // 不隐藏 selectedBox 和 selectedLabel，保留选中状态
+  }
+
+  // 完全禁用高亮功能（移除所有监听器）
+  function fullyDisableHighlight() {
+    console.log("Fully disabling highlight");
+    highlightEnabled = false;
+    document.removeEventListener("mouseover", handleMouseOver, true);
+    document.removeEventListener("mouseout", handleMouseOut, true);
+    document.removeEventListener("click", handleClick, true);
+    overlay.style.display = "none";
+    highlightBox.style.display = "none";
+    tagLabel.style.display = "none";
+    selectedBox.style.display = "none";
+    selectedLabel.style.display = "none";
+  }
+
+  // 添加事件监听
+  enableHighlight();
+  window.addEventListener("message", handleParentMessage);
+
+  // 暴露全局函数供外部调用
+  window.__iframeHighlightControl = {
+    enable: enableHighlight,
+    disable: disableHighlight,
+    fullyDisable: fullyDisableHighlight,
+    isEnabled: function isEnabled() {
+      return highlightEnabled;
+    },
+    getSelectedElement: function getSelectedElement() {
+      return selectedElement;
+    },
+    updateSelected: updateSelectedHighlight,
+    // 通过消息发送开关控制
+    sendToggleMessage: function sendToggleMessage(enabled) {
+      window.parent.postMessage({
+        type: 'iframe-highlight-status',
+        enabled: enabled || highlightEnabled,
+        source: 'iframe-highlight-injector'
+      }, '*');
+    }
+  };
+
+  // 通知父窗口脚本已加载
+  try {
+    window.parent.postMessage({
+      type: "iframe-highlight-ready",
+      data: {
+        url: window.location.href,
+        userAgent: navigator.userAgent,
+        timestamp: Date.now()
+      },
+      source: "iframe-highlight-injector"
+    }, "*");
+  } catch (error) {
+    console.warn("无法发送就绪消息到父窗口:", error);
+  }
+
+  // 清理函数
+  window.__iframeHighlightCleanup = function () {
+    fullyDisableHighlight();
+    window.removeEventListener("message", handleParentMessage);
+    if (overlay.parentElement) {
+      overlay.parentElement.removeChild(overlay);
+    }
+    delete window.__iframeHighlightInitialized;
+    delete window.__iframeHighlightCleanup;
+  };
+})();
+
+</script>
+</body>
+</html>

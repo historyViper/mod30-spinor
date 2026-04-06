@@ -1,0 +1,60 @@
+GBP v7 Ablation Summary — Minimax Input
+=======================================
+
+This summary is based on the frozen GBP v7 framework and its ablation script.
+Reference files used:
+- gbp_complete_v7.py
+- gbp_v7_ablation.py
+
+Core conclusion:
+The ablation study argues that GBP v7 is not being carried by hidden tuning knobs. The main performance gains come from structural ingredients: boundary scaling, topology, and direct geometric coupling. The obvious overfitting suspects—particle-specific overrides and small correction terms—have much smaller impact on total fit quality.
+
+Main findings:
+
+1. Load-bearing ingredients (large delta MAPE)
+- lam / boundary scaling: +5.35% delta MAPE when removed
+- Constituent sum only: +5.57% delta MAPE relative to full model
+- Force all baryons to S1/T1 topology: +2.63% delta MAPE
+- Remove dg term (geo_factor coupling): +1.30% delta MAPE
+
+Interpretation:
+- Boundary scaling is doing most of the work. This is a core physics term, not a cosmetic correction.
+- The near-match between “remove lam” and “constituent sum only” shows that lam is the primary correction beyond the constituent baseline.
+- Topology assignments are essential. T1/T2/T3 is not decorative labeling.
+- Direct geometric coupling through dg is real and necessary.
+
+2. DeepSeek “hidden knobs” objection addressed
+- Remove geo_factor overrides: only +0.15% delta MAPE overall
+- Remove photon branch: +0.28% delta MAPE overall
+- Remove gc term: only +0.026% delta MAPE overall
+
+Interpretation:
+- The geo_factor overrides are not load-bearing. The fit survives without them.
+- The photon branch is not a global crutch. Its overall effect is modest, but it matters strongly where it is supposed to matter.
+- gc is a real correction term, but it is small. It should be described honestly as a refinement, not the engine of the model.
+
+3. Localized photon-branch effect
+- Removing the photon branch hurts Xi_c*+ and Xi_c*0 strongly: about +5.66% error on those states specifically.
+
+Interpretation:
+- This behavior is what a real specialized structural mechanism should look like.
+- Small global effect, large local effect where the topology says it should matter.
+- That argues for a topological rule rather than generic overfitting.
+
+4. Killer anti-overfitting point
+- Removing overrides only meaningfully affects about 5 baryons
+- Total overall damage is only +0.15% MAPE
+
+Interpretation:
+- If the model were being held up by hidden knobs, removing the overrides should collapse the fit.
+- It does not.
+- The structure is carrying the model, not patch corrections.
+
+Clean scientific wording:
+“The ablation study shows that model performance is driven mainly by boundary scaling, topology, and direct geometric coupling. By contrast, particle-specific overrides contribute only marginally to overall fit quality, which argues against the idea that the result is being carried by hidden tuning knobs.”
+
+Stronger public wording:
+“If the model were overfit, removing the special-case overrides should wreck the fit. It doesn’t. What actually hurts the model is removing boundary scaling, topology, and geometric coupling. That points to structural physics, not cosmetic tuning.”
+
+One-line takeaway:
+The dominant improvement comes from structural terms, not ad hoc refinements.
